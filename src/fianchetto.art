@@ -11,45 +11,64 @@
 ; @file: src/fianchetto.art
 ;==========================================================
 
-; Define piece type
+import 'tabular!
+
+; Define chess coordinates type
+define :chessCoords [
+    init: method [
+        coords :string :block  
+    ][
+        ensure.that:"Coordinates' size is valid" -> 2 = size coords
+        
+        \file: coords\0
+        \rank: coords\1
+
+        unless integer? \rank ->
+            \rank: to :integer to :string \rank
+
+        ensure.that:"Coordinate file is valid" -> in? \file 'a'..'h' 
+        ensure.that:"Coordinate rank is valid" -> in? \rank 1..8
+    ]
+
+    string: method [][
+        join @[\file to :string \rank]
+    ]
+
+    index: method [][
+        fileIndex: (to :integer \file) - to :integer 'a'
+        rankIndex: dec \rank
+        fileIndex + rankIndex * 8
+    ]
+]
+
+; Define chess piece type
 define :chessPiece [
     init: method [
         ch :char :literal :string
     ][
-        \color: switch  upper? ch -> 'white -> 'black
-        \kind: case to :literal lower ch [
-            'p -> 'pawn
-            'n -> 'knight
-            'b -> 'bishop
-            'r -> 'rook
-            'q -> 'queen
-            'k -> 'king
-            any -> panic "Invalid piece character"
-        ]
+        pc: to :string (string? ch)? -> first ch -> ch
+
+        \color: switch upper? pc -> 'white -> 'black
+        \kind: to :literal lower pc
+        
+        ensure.that:"Piece is valid" -> in? \kind ['p 'n 'b 'r 'q 'k]
     ]
 
-    ; Convert piece to FEN character
-    string: method [][
-        pieceChar: case \kind [
-            'pawn   -> "p"
-            'knight -> "n"
-            'bishop -> "b"
-            'rook   -> "r"
-            'queen  -> "q"
-            'king   -> "k"
-            any     -> panic "Invalid piece type"
-        ]
+    white?: method [][
+        \color = 'white
+    ]
 
-        switch \color = 'white -> upper pieceChar 
-                               -> pieceChar
+    string: method [][
+        pieceChar: to :string \kind
+        if \white? -> upper 'pieceChar
+        pieceChar
     ]
 ]
 
-; Define square type
+; Define chess square type
 define :chessSquare [
     init: constructor [
-        file :integer               ; 0-7 (a-h)
-        rank :integer               ; 0-7 (1-8)
+        coords :chessCoords
         piece :null :chessPiece
     ]
 
@@ -65,72 +84,90 @@ define :chessSquare [
     ]
 ]
 
+; Define chess move type
+define :chessMove [
+    init: method [
+        coordset :string :block 
+    ][
+        switch string? coordset [
+            cleaned: replace coordset "-" ""
+
+            ensure.that:"Move format is valid" -> 4 = size cleaned
+
+            \fromSq: to :chessCoords [slice cleaned 0 1]
+            \toSq: to :chessCoords [slice cleaned 2 3]
+        ][
+            ensure.that:"Move format is valid" -> 2 = size coordset
+
+            \fromSq: coordset\0
+            \toSq: coordset\1
+        ]
+    ]
+
+    string: method [][
+        join @[
+            to :string \fromSq
+            to :string \toSq
+        ]
+    ]
+]
+
 ; Define chess board type
 define :chessBoard [
     init: method [][
-        ; Create an 8x8 array of squares
-        \squares: new map 0..63 'i -> 
-            to :chessSquare [i%8 i/8 null]
+        ; Initialize a 64-element array for the board
+        ; squares[0] = a1, squares[1] = b1, ..., squares[63] = h8
+        \squares: array.of:64 ø       ; create array with 64 null elements
     ]
 
-    ; Get square at given position
-    getSquare: method [file :string :char rank :integer][
-        fileIndex: sub to :integer first file to :integer 'a'
-        rankIndex: rank - 1
-        \squares\[fileIndex + rankIndex * 8]
+    ; Get piece at coordinates
+    getPiece: method [coords :chessCoords][
+        \squares\[coords\index]
     ]
 
-    ; Set piece at given position
-    setPiece: method [file :string rank :integer piece :chessPiece][
-        sq: \getSquare file rank
-        sq\piece: piece
+    ; Set piece at coordinates (null to clear)
+    setPiece: method [coords :chessCoords piece :null :chessPiece][
+        \squares\[coords\index]: piece
     ]
 
-    ; Convert board to FEN style
+    ; Convert board to FEN notation 
     notation: method [][
         result: ""
-        emptyCount: 0
-
         loop 7..0 'rank [
+            emptyCount: 0
             loop 0..7 'file [
-                sq: \squares\[file + rank * 8]
+                coords: to :chessCoords [@[to :char (to :integer 'a') + file, 8 - rank]]!
+                piece: \getPiece coords
                 
-                switch null? sq\piece -> inc 'emptyCount [
+                switch null? piece -> inc 'emptyCount [
                     if emptyCount > 0 [
                         result: result ++ to :string emptyCount
                         emptyCount: 0
                     ]
-                    result: result ++ to :string sq\piece
+                    result: result ++ to :string piece
                 ]
             ]
             
             if emptyCount > 0 [
                 result: result ++ to :string emptyCount
-                emptyCount: 0
             ]
 
             if rank > 0 -> result: result ++ "/"
         ]
-
         result
     ]
 
-    ; Return string representation
     string: method [][
-        result: ""
-        emptyCount: 0
+        rows: map 8..1 'rank [
+            map 'a'..'h' 'file [
+                coords: to :chessCoords [@[file rank]]!
+                piece: \getPiece coords
 
-        result: result ++ "+" ++ (repeat "-" 31) ++ "+\n"
-        loop 7..0 'rank [
-            result: result ++ "|"
-            loop 0..7 'file [
-                result: result ++ (pad.center to :string \squares\[file + rank * 8] 3) ++ "|"
+                (null? piece)? -> "-" 
+                               -> to :string piece
             ]
-            result: result ++ "\n"
         ]
-        result: result ++ "+" ++ (repeat "-" 31) ++ "+"
-
-        result
+        tabular.align:'center .padding:0 rows
     ]
 ]
 
@@ -141,7 +178,7 @@ define :chessPosition [
         parts: split.by:" " read fenSrc
         ensure.that:"Invalid FEN string format" -> 6 = size parts
 
-        board: to :chessBoard []!
+        \board: to :chessBoard []!
         ranks: split.by:"/" parts\0
         ensure.that:"Invalid number of ranks in FEN" -> 8 = size ranks
 
@@ -150,20 +187,78 @@ define :chessPosition [
             fileIndex: 0
             loop split rank 'ch [
                 switch numeric? ch -> fileIndex: fileIndex + to :integer ch [
-                    file: to :string to :char (to :integer 'a') + fileIndex
+                    coords: to :chessCoords [@[to :char (to :integer 'a') + fileIndex, 8 - rankIndex]]!
                     piece: to :chessPiece [ch]!
-                    board\setPiece file 8 - rankIndex piece
+                    \board\setPiece coords piece
                     inc 'fileIndex
                 ]
             ]
         ]
 
-        \board: board                                           ; the chess board
         \activeColor: switch parts\1 = "w" -> 'white -> 'black  ; active color
         \castling: parts\2                                      ; castling
         \enPassant: parts\3                                     ; en passant
         \halfmove: to :integer parts\4                          ; halfmove clock
         \fullmove: to :integer parts\5                          ; fullmove number
+    ]
+
+    ; Validate if a move is legal in current position
+    validateMove: method [move :chessMove][
+        ; 1. Basic piece existence and color check
+        piece: \board\getPiece move\fromSq
+        if null? piece -> return false
+        if piece\color <> \activeColor -> return false
+
+        ; 2. Check if piece at destination is not same color
+        destPiece: \board\getPiece move\toSq
+        unless null? destPiece [
+            if destPiece\color = piece\color -> return false
+        ]
+
+        ; 3. Basic piece movement validation
+        ; TODO: implement piece-specific movement rules
+        case piece\kind [
+            'p [ ; Pawn movement rules
+                ; TODO: implement pawn moves, captures, en passant
+            ]
+            'n [ ; Knight movement rules
+                ; TODO: implement knight moves
+            ]
+            'b [ ; Bishop movement rules
+                ; TODO: implement bishop moves
+            ]
+            'r [ ; Rook movement rules
+                ; TODO: implement rook moves
+            ]
+            'q [ ; Queen movement rules
+                ; TODO: implement queen moves
+            ]
+            'k [ ; King movement rules
+                ; TODO: implement king moves and castling
+            ]
+        ]
+
+        ; For now, return true
+        return true
+    ]
+
+    ; Create a new position after applying the move
+    applyMove: method [move :chessMove][
+        ; Create copy of current position
+        newPos: to :chessPosition [to :string this]!
+            
+        ; Move piece
+        piece: \board\getPiece move\fromSq
+        newPos\board\setPiece move\fromSq null
+        newPos\board\setPiece move\toSq piece
+
+        ; Update position details
+        newPos\activeColor: switch \activeColor = 'white -> 'black -> 'white
+        newPos\fullmove: switch \activeColor = 'black -> \fullmove + 1 -> \fullmove
+
+        ; TODO: Update castling rights, en passant square, etc.
+
+        return newPos
     ]
 
     ; Convert position to FEN string
@@ -178,5 +273,64 @@ define :chessPosition [
             to :string \halfmove
             to :string \fullmove
         ]
+    ]
+]
+
+; Define chess game type
+define :chessGame [
+    init: method [
+        source :string :null    ; could be PGN or null for new game
+    ][
+        ; Initialize empty game
+        \position: to :chessPosition [ø]!   ; current position
+        \moves: []
+        \result: null     ; null = ongoing, "1-0" = white wins, "0-1" = black wins, "1/2-1/2" = draw
+
+        if not? null? source [
+            ; Basic PGN parsing (placeholder)
+            if contains? source "1. " [
+                ; TODO: implement PGN parsing
+            ]
+        ]
+    ]
+
+    ; Check if move is legal (placeholder)
+    legal?: method [move :chessMove][
+        true    ; For now, consider all moves legal
+    ]
+
+    ; Execute move and update game state
+    makeMove: method [coords :chessMove :string][
+        move: (is? :chessMove coords)? -> coords -> to :chessMove [coords]
+        
+        if \position\validateMove move [
+            \position: \position\applyMove move
+            \moves: \moves ++ move
+            
+            return true
+        ]
+        
+        return false
+    ]
+
+    ; Convert game to PGN format (basic implementation)
+    string: method [][
+        output: "[Event \"Casual Game\"]\n"
+        output: output ++ "[Date \"" ++ (slice to :string now 0 10) ++ "\"]\n"
+        output: output ++ "[White \"Player 1\"]\n"
+        output: output ++ "[Black \"Player 2\"]\n"
+        output: output ++ "[Result \"" ++ (\result ?? "*") ++ "\"]\n\n"
+
+        ; Add moves
+        moveNum: 1
+        loop \moves 'move [
+            if even? index -> output: output ++ to :string moveNum ++ ". "
+            output: output ++ (to :string move) ++ " "
+            if even? index -> inc 'moveNum
+        ]
+
+        ; Add result
+        output: output ++ " " ++ (\result ?? "*")
+        output
     ]
 ]
