@@ -1,38 +1,18 @@
 import ./"../src/fianchetto"!
 
-; pos: to :chessPosition ["rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"]!
-; print pos\board
-; print pos
+; game: to :chessGame [ø]!
+; print game\position
+; print game\position\board
 
-game: to :chessGame [ø]!
-print game\position
-print game\position\board
+; print game
 
+; ; Make moves using coordinates
+; print game\makeMove "e2e4"
+; print game\makeMove "d7d5"
+; print game\makeMove "a2a1"
+; print game\position\board
+
+
+game: to :chessGame [read arg\0]!
 print game
-
-; ; Make moves using coordinates
-print game\makeMove "e2e4"
-print game\makeMove "d7d5"
-print game\makeMove "a2a3";];to :chessMove [to :chessCoords ["e" 2] to :chessCoords ["e" 4]]
-print game\position\board
-
-; ; Or using chess objects
-; from: to :chessCoords ["e" 7]!
-; to: to :chessCoords ["e" 5]!
-; move: to :chessMove [from to]!
-; game\makeMove move
-; print game\position\board
-
-; game: to :chessGame []!
-; print game\position\board
-
-; ; Make moves using coordinates
-; game\makeMove "e" 2 "e" 4
-; print game\position\board
-
-; ; Or using chess objects
-; from: to :chessCoords ["e" 7]!
-; to: to :chessCoords ["e" 5]!
-; move: to :chessMove [from to]!
-; game\makeMove move
-; print game\position\board
+print game\moves

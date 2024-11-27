@@ -60,27 +60,10 @@ define :chessPiece [
 
     string: method [][
         pieceChar: to :string \kind
-        if \white? -> upper 'pieceChar
+        if \white? [ 
+            pieceChar: upper pieceChar 
+        ]
         pieceChar
-    ]
-]
-
-; Define chess square type
-define :chessSquare [
-    init: constructor [
-        coords :chessCoords
-        piece :null :chessPiece
-    ]
-
-    ; Convert square to algebraic notation
-    string: method [][
-        switch null? \piece -> "-"
-                            -> to :string \piece
-    ]
-
-    ; Is square empty?
-    empty?: method [][
-        null? \piece
     ]
 ]
 
@@ -182,12 +165,15 @@ define :chessPosition [
         ranks: split.by:"/" parts\0
         ensure.that:"Invalid number of ranks in FEN" -> 8 = size ranks
 
-        ; Parse board position
+        ; Parse board position from top (rank 8) to bottom (rank 1)
         loop.with:'rankIndex ranks 'rank [
             fileIndex: 0
             loop split rank 'ch [
                 switch numeric? ch -> fileIndex: fileIndex + to :integer ch [
-                    coords: to :chessCoords [@[to :char (to :integer 'a') + fileIndex, 8 - rankIndex]]!
+                    coords: to :chessCoords [@[
+                        to :char (to :integer 'a') + fileIndex,  ; file (a-h)
+                        8 - rankIndex                            ; rank (8 down to 1)
+                    ]]!
                     piece: to :chessPiece [ch]!
                     \board\setPiece coords piece
                     inc 'fileIndex
@@ -204,63 +190,74 @@ define :chessPosition [
 
     ; Validate if a move is legal in current position
     validateMove: method [move :chessMove][
+        
         ; 1. Basic piece existence and color check
         piece: \board\getPiece move\fromSq
-        if null? piece -> return false
-        if piece\color <> \activeColor -> return false
+        
+        if null? piece [
+            print "No piece at source square"
+            return false
+        ]
+        
+        if piece\color <> \activeColor [
+            print "Wrong color to move"
+            return false
+        ]
 
         ; 2. Check if piece at destination is not same color
         destPiece: \board\getPiece move\toSq
+        
         unless null? destPiece [
-            if destPiece\color = piece\color -> return false
-        ]
-
-        ; 3. Basic piece movement validation
-        ; TODO: implement piece-specific movement rules
-        case piece\kind [
-            'p [ ; Pawn movement rules
-                ; TODO: implement pawn moves, captures, en passant
-            ]
-            'n [ ; Knight movement rules
-                ; TODO: implement knight moves
-            ]
-            'b [ ; Bishop movement rules
-                ; TODO: implement bishop moves
-            ]
-            'r [ ; Rook movement rules
-                ; TODO: implement rook moves
-            ]
-            'q [ ; Queen movement rules
-                ; TODO: implement queen moves
-            ]
-            'k [ ; King movement rules
-                ; TODO: implement king moves and castling
+            if destPiece\color = piece\color [
+                print "Cannot capture own piece"
+                return false
             ]
         ]
 
-        ; For now, return true
         return true
+    ]
+
+    copy: method [][
+        newPos: to :chessPosition [ø]!
+        
+        ; Copy basic properties
+        newPos\activeColor: \activeColor
+        newPos\castling: \castling
+        newPos\enPassant: \enPassant 
+        newPos\halfmove: \halfmove
+        newPos\fullmove: \fullmove
+
+        ; Deep copy of board
+        newPos\board: to :chessBoard []!
+        loop 0..63 'i [
+            piece: \board\squares\[i]
+            if piece [
+                newPos\board\squares\[i]: to :chessPiece [to :string piece]!
+            ]
+        ]
+
+        return newPos
     ]
 
     ; Create a new position after applying the move
     applyMove: method [move :chessMove][
-        ; Create copy of current position
-        newPos: to :chessPosition [to :string this]!
+        ; Create new position with same properties
+        newPos: \copy
             
-        ; Move piece
+        ; Get and copy the piece we're moving
         piece: \board\getPiece move\fromSq
+        piece: to :chessPiece [to :string piece]! ; Create new copy of piece
+            
+        ; Clear source square and set destination square
         newPos\board\setPiece move\fromSq null
-        newPos\board\setPiece move\toSq piece
+        newPos\board\setPiece move\toSq piece 
 
         ; Update position details
         newPos\activeColor: switch \activeColor = 'white -> 'black -> 'white
         newPos\fullmove: switch \activeColor = 'black -> \fullmove + 1 -> \fullmove
 
-        ; TODO: Update castling rights, en passant square, etc.
-
         return newPos
     ]
-
     ; Convert position to FEN string
     string: method [][
         colorNotation: switch \activeColor = 'white -> "w" -> "b"
@@ -276,61 +273,160 @@ define :chessPosition [
     ]
 ]
 
-; Define chess game type
-define :chessGame [
+; Define chess game result type
+define :chessGameResult [
     init: method [
-        source :string :null    ; could be PGN or null for new game
+        value :string :literal :null
     ][
-        ; Initialize empty game
-        \position: to :chessPosition [ø]!   ; current position
-        \moves: []
-        \result: null     ; null = ongoing, "1-0" = white wins, "0-1" = black wins, "1/2-1/2" = draw
+        \winner: value
 
-        if not? null? source [
-            ; Basic PGN parsing (placeholder)
-            if contains? source "1. " [
-                ; TODO: implement PGN parsing
+        if null? \winner ->
+            \winner: 'none
+
+        if string? \winner [
+            \winner: case \winner [
+                "1-0"     -> 'white
+                "0-1"     -> 'black
+                "1/2-1/2" -> 'draw
+                "*"       -> 'none
+            ]
+        ]
+
+        ensure.that:"Game result type is valid" -> 
+            in? \winner ['white 'black 'draw 'none]
+    ]
+
+    string: method [][
+        case \winner [
+            'white -> "1-0"
+            'black -> "0-1"
+            'draw  -> "1/2-1/2"
+            'none  -> "*"
+        ]
+    ]
+
+    final?: method [][
+        \winner <> 'none
+    ]
+]
+
+; Define chess game metadata type
+define :chessGameMetadata [
+    init: method [source :dictionary :null][
+        ; Initialize with default values
+        \event: "Casual Game"
+        \site: "?"
+        \date: slice to :string now 0 10  ; YYYY-MM-DD
+        \round: "?"
+        \white: "Player 1"
+        \black: "Player 2"
+        \timeControl: "?"
+        \eco: "?"
+
+        ; If source dictionary provided, update values
+        if dictionary? source [
+            loop source [k,v][
+                if key? this k [
+                    this\[k]: v
+                ]
             ]
         ]
     ]
 
-    ; Check if move is legal (placeholder)
-    legal?: method [move :chessMove][
-        true    ; For now, consider all moves legal
+    string: method [][
+        join @[
+            "[Event \""    \event       "\"]\n"
+            "[Site \""     \site        "\"]\n"
+            "[Date \""     \date        "\"]\n"
+            "[Round \""    \round       "\"]\n"
+            "[White \""    \white       "\"]\n"
+            "[Black \""    \black       "\"]\n"
+            "[Result \""   \timeControl "\"]\n"
+            "[ECO \""      \eco         "\"]"
+        ]
+    ]
+]
+
+; Update chess game type to use new metadata type
+define :chessGame [
+    init: method [
+        source :string :null    ; could be PGN or null for new game
+    ][
+        \position: to :chessPosition [ø]!   
+        \moves: []
+        \result: to :chessGameResult [ø]!   
+        \metadata: to :chessGameMetadata [ø]!
+
+        if not? null? source [
+            if contains? source "[" [  
+                ; Split into header and moves sections
+                parts: split.by:"\n\n" source
+
+                ; Parse headers
+                headers: #[]
+                if contains? parts\0 "[" [
+                    matches: match.capture parts\0 {/\[(.*?) "(.*?)"\]/} 
+                    loop matches 'm [
+                        tag: lower m\0
+                        value: m\1
+                        headers\[tag]: value
+                    ]
+
+                    \metadata: to :chessGameMetadata [headers]!
+                    if key? headers 'result [
+                        \result: to :chessGameResult [headers\result]!
+                    ]
+                ]
+
+                ; Parse moves if we have more than one part
+                if 1 < size parts [
+                    movesText: join drop parts
+                    
+                    ; Remove comments
+                    cleaned: replace movesText to :regex {:\{[^}]*\}:} ""
+                    
+                    ; Remove move numbers and result
+                    cleaned: replace cleaned {/\d+\.+\s*/} ""      
+                    cleaned: replace cleaned {/1-0|0-1|1\/2-1\/2|\*/} "" 
+                    
+                    ; Split into individual moves and process each
+                    moves: split.words cleaned
+                    
+                    loop moves 'moveStr [
+                        if not? contains? moveStr "-" [
+                            \makeMove moveStr
+                        ]
+                    ]
+                ]
+            ]
+        ]
     ]
 
-    ; Execute move and update game state
     makeMove: method [coords :chessMove :string][
         move: (is? :chessMove coords)? -> coords -> to :chessMove [coords]
         
-        if \position\validateMove move [
-            \position: \position\applyMove move
-            \moves: \moves ++ move
-            
-            return true
-        ]
-        
-        return false
+        unless \position\validateMove move ->
+            return false
+    
+        \position: \position\applyMove move
+        \moves: \moves ++ move
+        return true
     ]
 
-    ; Convert game to PGN format (basic implementation)
     string: method [][
-        output: "[Event \"Casual Game\"]\n"
-        output: output ++ "[Date \"" ++ (slice to :string now 0 10) ++ "\"]\n"
-        output: output ++ "[White \"Player 1\"]\n"
-        output: output ++ "[Black \"Player 2\"]\n"
-        output: output ++ "[Result \"" ++ (\result ?? "*") ++ "\"]\n\n"
+        output: to :string \metadata
+        output: output ++ "\n\n"
 
         ; Add moves
         moveNum: 1
         loop \moves 'move [
-            if even? index -> output: output ++ to :string moveNum ++ ". "
+            if even? index -> output: output ++ (to :string moveNum) ++ ". "
             output: output ++ (to :string move) ++ " "
             if even? index -> inc 'moveNum
         ]
 
         ; Add result
-        output: output ++ " " ++ (\result ?? "*")
+        output: output ++ " " ++ to :string \result
         output
     ]
 ]
