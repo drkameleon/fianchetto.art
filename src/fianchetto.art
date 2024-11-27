@@ -1,12 +1,15 @@
 ;===============================================
-; FEN.art
+; Fianchetto
 ;
-; A package for handling chess positions 
-; in Forsyth Edwards Notation (FEN)
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
 ;
 ; MIT License
-; (c) 2024
-;-----------------------------------------------
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/fianchetto.art
+;==========================================================
 
 ; Define piece type
 define :chessPiece [
