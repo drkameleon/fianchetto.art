@@ -1,0 +1,185 @@
+;===============================================
+; FEN.art
+;
+; A package for handling chess positions 
+; in Forsyth Edwards Notation (FEN)
+;
+; MIT License
+; (c) 2024
+;-----------------------------------------------
+
+; Define piece type
+define :chessPiece [
+    init: method [
+        ch :char :literal :string
+    ][
+        \color: switch  upper? ch -> 'white -> 'black
+        \kind: case to :literal lower ch [
+            'p -> 'pawn
+            'n -> 'knight
+            'b -> 'bishop
+            'r -> 'rook
+            'q -> 'queen
+            'k -> 'king
+            any -> panic "Invalid piece character"
+        ]
+    ]
+
+    ; Convert piece to FEN character
+    string: method [][
+        pieceChar: case \kind [
+            'pawn   -> "p"
+            'knight -> "n"
+            'bishop -> "b"
+            'rook   -> "r"
+            'queen  -> "q"
+            'king   -> "k"
+            any     -> panic "Invalid piece type"
+        ]
+
+        switch \color = 'white -> upper pieceChar 
+                               -> pieceChar
+    ]
+]
+
+; Define square type
+define :chessSquare [
+    init: constructor [
+        file :integer               ; 0-7 (a-h)
+        rank :integer               ; 0-7 (1-8)
+        piece :null :chessPiece
+    ]
+
+    ; Convert square to algebraic notation
+    string: method [][
+        switch null? \piece -> "-"
+                            -> to :string \piece
+    ]
+
+    ; Is square empty?
+    empty?: method [][
+        null? \piece
+    ]
+]
+
+; Define chess board type
+define :chessBoard [
+    init: method [][
+        ; Create an 8x8 array of squares
+        \squares: new map 0..63 'i -> 
+            to :chessSquare [i%8 i/8 null]
+    ]
+
+    ; Get square at given position
+    getSquare: method [file :string :char rank :integer][
+        fileIndex: sub to :integer first file to :integer 'a'
+        rankIndex: rank - 1
+        \squares\[fileIndex + rankIndex * 8]
+    ]
+
+    ; Set piece at given position
+    setPiece: method [file :string rank :integer piece :chessPiece][
+        sq: \getSquare file rank
+        sq\piece: piece
+    ]
+
+    ; Convert board to FEN style
+    notation: method [][
+        result: ""
+        emptyCount: 0
+
+        loop 7..0 'rank [
+            loop 0..7 'file [
+                sq: \squares\[file + rank * 8]
+                
+                switch null? sq\piece -> inc 'emptyCount [
+                    if emptyCount > 0 [
+                        result: result ++ to :string emptyCount
+                        emptyCount: 0
+                    ]
+                    result: result ++ to :string sq\piece
+                ]
+            ]
+            
+            if emptyCount > 0 [
+                result: result ++ to :string emptyCount
+                emptyCount: 0
+            ]
+
+            if rank > 0 -> result: result ++ "/"
+        ]
+
+        result
+    ]
+
+    ; Return string representation
+    string: method [][
+        result: ""
+        emptyCount: 0
+
+        result: result ++ "+" ++ (repeat "-" 31) ++ "+\n"
+        loop 7..0 'rank [
+            result: result ++ "|"
+            loop 0..7 'file [
+                result: result ++ (pad.center to :string \squares\[file + rank * 8] 3) ++ "|"
+            ]
+            result: result ++ "\n"
+        ]
+        result: result ++ "+" ++ (repeat "-" 31) ++ "+"
+
+        result
+    ]
+]
+
+; Define chess position type
+define :chessPosition [
+    init: method [source :string :null][
+        fenSrc: source ?? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        parts: split.by:" " read fenSrc
+        ensure.that:"Invalid FEN string format" -> 6 = size parts
+
+        board: to :chessBoard []!
+        ranks: split.by:"/" parts\0
+        ensure.that:"Invalid number of ranks in FEN" -> 8 = size ranks
+
+        ; Parse board position
+        loop.with:'rankIndex ranks 'rank [
+            fileIndex: 0
+            loop split rank 'ch [
+                switch numeric? ch -> fileIndex: fileIndex + to :integer ch [
+                    file: to :string to :char (to :integer 'a') + fileIndex
+                    piece: to :chessPiece [ch]!
+                    board\setPiece file 8 - rankIndex piece
+                    inc 'fileIndex
+                ]
+            ]
+        ]
+
+        \board: board                                           ; the chess board
+        \activeColor: switch parts\1 = "w" -> 'white -> 'black  ; active color
+        \castling: parts\2                                      ; castling
+        \enPassant: parts\3                                     ; en passant
+        \halfmove: to :integer parts\4                          ; halfmove clock
+        \fullmove: to :integer parts\5                          ; fullmove number
+    ]
+
+    ; Convert position to FEN string
+    string: method [][
+        colorNotation: switch \activeColor = 'white -> "w" -> "b"
+
+        join.with:" " @[
+            \board\notation
+            colorNotation
+            \castling
+            \enPassant
+            to :string \halfmove
+            to :string \fullmove
+        ]
+    ]
+]
+
+; debugging
+
+pos: to :chessPosition ["rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2"]!
+print pos\board
+print pos
