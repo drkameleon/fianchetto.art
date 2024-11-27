@@ -1,5 +1,5 @@
 
-<p align="center"><img align="center" width="500" src="https://raw.githubusercontent.com/drkameleon/fianchetto.art/main/logo.png"/></p>
+<p align="center"><img align="center" width="500" src="https://raw.githubusercontent.com/drkameleon/fianchetto.art/main/icon.png"/></p>
 <p align="center">
   <b>Chess-aware components / custom types,<br>and more...</b>
   <br><br>
