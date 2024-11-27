@@ -1,10 +1,13 @@
 
-<p align="center"><img align="center" width="650" src="https://raw.githubusercontent.com/drkameleon/fianchetto.art/main/logo.png"/></p>
+<p align="center"><img align="center" width="500" src="https://raw.githubusercontent.com/drkameleon/fianchetto.art/main/logo.png"/></p>
 <p align="center">
   <b>Chess-aware components / custom types,<br>and more...</b>
   <br><br>
-  <img src="https://img.shields.io/github/license/arturo-lang/grafito?style=for-the-badge">
+    <img src="https://img.shields.io/github/license/arturo-lang/grafito?style=for-the-badge">
   <img src="https://img.shields.io/badge/language-Arturo-orange.svg?style=for-the-badge">
+  
+  
+
 
 </p>
 
