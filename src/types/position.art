@@ -24,7 +24,7 @@ define :chessPosition [
     init: method [source :string :null][
         fenSrc: source ?? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         parts: split.by:" " read fenSrc
-        ensure.that:"Invalid FEN string format" -> 6 = size parts
+        ensure.that:"FEN string format is valid" -> 6 = size parts
 
         \board: to :chessBoard []!
         ranks: split.by:"/" parts\0
@@ -58,10 +58,10 @@ define :chessPosition [
     ;------------------------------
 
     ; Validate if a move is legal in current position
-    validateMove: method [move :chessMove][
+    validateMove: method [newMove :chessMove][
         
         ; 1. Basic piece existence and color check
-        piece: \board\getPiece move\fromSq
+        piece: \board\getPiece newMove\fromSq
         
         if null? piece [
             print "No piece at source square"
@@ -74,7 +74,7 @@ define :chessPosition [
         ]
 
         ; 2. Check if piece at destination is not same color
-        destPiece: \board\getPiece move\toSq
+        destPiece: \board\getPiece newMove\toSq
         
         unless null? destPiece [
             if destPiece\color = piece\color [
@@ -87,21 +87,21 @@ define :chessPosition [
     ]
 
     ; Create a new position after applying the move
-    applyMove: method [move :chessMove][
+    applyMove: method [newMove :chessMove][
         ; Create new position with same properties
         newPos: new this
             
         ; Get and copy the piece we're moving
-        piece: \board\getPiece move\fromSq
+        piece: \board\getPiece newMove\fromSq
         piece: to :chessPiece [to :string piece]! ; Create new copy of piece
             
         ; Clear source square and set destination square
-        newPos\board\setPiece move\fromSq null
-        newPos\board\setPiece move\toSq piece 
+        newPos\board\setPiece newMove\fromSq ø
+        newPos\board\setPiece newMove\toSq piece 
 
         ; Update position details
-        newPos\activeColor: switch \activeColor = 'white -> 'black -> 'white
-        newPos\fullmove: switch \activeColor = 'black -> \fullmove + 1 -> \fullmove
+        newPos\activeColor: (\activeColor = 'white)? -> 'black -> 'white
+        newPos\fullmove: (\activeColor = 'black)? -> \fullmove + 1 -> \fullmove
 
         return newPos
     ]
@@ -111,7 +111,7 @@ define :chessPosition [
     ;------------------------------
 
     string: method [][
-        colorNotation: switch \activeColor = 'white -> "w" -> "b"
+        colorNotation: (\activeColor = 'white)? -> "w" -> "b"
 
         join.with:" " @[
             \board\notation
