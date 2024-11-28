@@ -20,6 +20,12 @@
 * [What does this package do?](#what-does-this-package-do)
 * [How do I use it?](#how-do-i-use-it)
 * [Type Reference](#type-reference)
+   * [chessCoords](#chesscoords)
+   * [chessPiece](#chesspiece)
+   * [chessMove](#chessmove)
+   * [chessBoard](#chessboard)
+   * [chessPosition](#chessposition)
+   * [chessGame](#chessgame) 
 * [License](#license)   
 
 <!--te-->
@@ -72,7 +78,7 @@ Final position:
 
 ### Type reference
 
-#### `chessCoords`
+#### chessCoords
 
 Mainly used to hold square coordinates, or a file-rank pair.
 
@@ -90,6 +96,105 @@ Mainly used to hold square coordinates, or a file-rank pair.
 ##### methods
 
 - `\index`
+
+#### chessPiece
+
+The main chess piece representation
+
+##### constructor
+
+<pre>
+<b>to :chessPiece</b> [<ins>ch</ins> <i>:char :literal :string</i>]
+</pre>
+
+##### fields
+
+- `\color`
+- `\kind`
+
+##### methods
+
+- `\white?`
+- `\getMovePattern [fromSq :chessCoords, toSq :chessCoords]`
+
+#### chessMove
+
+A move type, encapsulating an origin and a target square.
+
+##### constructor
+
+<pre>
+<b>to :chessMove</b> [<ins>coordset</ins> <i>:string :block</i>]
+</pre>
+
+##### fields
+
+- `\fromSq`
+- `\toSq`
+
+#### chessBoard
+
+The main chess board
+
+##### constructor
+
+<pre>
+<b>to :chessBoard</b> []
+</pre>
+
+##### fields
+
+- `\squares`
+
+##### methods
+
+- `\getPiece [coords :chessCoords]`
+- `\setPiece [coords :chessCoords piece :null :chessPiece]`
+
+#### chessPosition
+
+A given chess position (roughly equivalent to a FEN representation)
+
+##### constructor
+
+<pre>
+<b>to :chessPosition</b> [<ins>source</ins> <i>:string :null</i>]
+</pre>
+
+##### fields
+
+- `\board`
+- `\activeColor`
+- `\castling`
+- `\enPassant`
+- `\halfmove`
+- `\fullmove`
+
+##### methods
+
+- `\validateMove [newMove :chessMove]`
+- `\applyMove [newMove :chessMove]`
+
+#### chessGame
+
+The main chess game container
+
+##### constructor
+
+<pre>
+<b>to :chessGame</b> [<ins>source</ins> <i>:string :null</i>]
+</pre>
+
+##### fields
+
+- `\position`
+- `\moves`
+- `\result`
+- `\metadata`
+
+##### methods
+
+- `\makeMove: [coords :chessMove :string]`
 
 <hr/>
 
