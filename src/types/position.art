@@ -15,7 +15,7 @@
 ; Type definition
 ;------------------------------
 
-define :chessPosition [
+define :chessPosition ::
 
     ;------------------------------
     ; Constructor
@@ -144,4 +144,3 @@ define :chessPosition [
             to :string \fullmove
         ]
     ]
-]

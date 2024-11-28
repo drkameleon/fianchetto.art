@@ -21,7 +21,7 @@ import 'tabular!
 ; Type definition
 ;------------------------------
 
-define :chessBoard [
+define :chessBoard ::
 
     ;------------------------------
     ; Constructor
@@ -103,4 +103,3 @@ define :chessBoard [
         reverse 'rows  ; Flip board to show white at bottom
         tabular.align:'center .padding:0 rows
     ]
-]

@@ -15,7 +15,7 @@
 ; Type definition
 ;------------------------------
 
-define :chessCoords [
+define :chessCoords ::
 
     ;------------------------------
     ; Constructor
@@ -62,4 +62,3 @@ define :chessCoords [
     string: method [][
         join @[\file to :string \rank]
     ]
-]

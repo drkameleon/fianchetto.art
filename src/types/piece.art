@@ -15,7 +15,7 @@
 ; Type definition
 ;------------------------------
 
-define :chessPiece [
+define :chessPiece ::
 
     ;------------------------------
     ; Constructor
@@ -51,4 +51,3 @@ define :chessPiece [
         ]
         pieceChar
     ]
-]
