@@ -1,6 +1,6 @@
-import ./"../src/fianchetto"!
+import .withHelpers ./"../src/fianchetto"!
 
-game: to :chessGame [ø]!
+game: newGame ø!
 print game\position
 print game\position\board
 

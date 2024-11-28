@@ -1,0 +1,20 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/helpers.art
+;==========================================================
+
+newGame: function [source][
+    to :chessGame [source]
+]
+
+fromFen: function [fen][
+    to :chessPosition [fen]
+]
