@@ -21,3 +21,11 @@ import ./"types/board"
 import ./"types/position"
 import ./"types/move"
 import ./"types/game"
+
+;------------------------------
+; Initialization
+;------------------------------
+
+if attr 'withHelpers [
+    import ./"helpers"
+]

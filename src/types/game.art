@@ -87,13 +87,13 @@ define :chessGame [
     ;------------------------------
 
     makeMove: method [coords :chessMove :string][
-        move: (is? :chessMove coords)? -> coords -> to :chessMove [coords]
+        newMove: (is? :chessMove coords)? -> coords -> to :chessMove [coords]
         
-        unless \position\validateMove move ->
+        unless \position\validateMove newMove ->
             return false
     
-        \position: \position\applyMove move
-        \moves: \moves ++ move
+        \position: \position\applyMove newMove
+        \moves: \moves ++ newMove
         return true
     ]
 
