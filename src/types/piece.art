@@ -13,7 +13,7 @@
 
 define :chessPiece [
     init: method [
-        ch :char :literal :string
+        ch :char :literal :string   ; e.g. "p", 'p', 'p
     ][
         pc: to :string (string? ch)? -> first ch -> ch
 
