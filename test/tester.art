@@ -4,13 +4,13 @@ game: newGame ø!
 print game\position
 print game\position\board
 
-print game
-
 ; Make moves using coordinates
 print game\makeMove "e2e4"
-print game\makeMove "d7d5"
-print game\makeMove "a2a1"
+print game\makeMove "e7e5"
+print game\makeMove "a2a5"
 print game\position\board
+; print game\makeMove "a2a1"
+; print game\position\board
 
 
 ; game: to :chessGame [read arg\0]!
