@@ -33,40 +33,53 @@ define :chessBoard [
     ; Convert board to FEN notation 
     notation: method [][
         result: ""
-        loop 7..0 'rank [
-            emptyCount: 0
-            loop 0..7 'file [
-                coords: to :chessCoords [@[to :char (to :integer 'a') + file, 8 - rank]]!
-                piece: \getPiece coords
-                
-                switch null? piece -> inc 'emptyCount [
-                    if emptyCount > 0 [
-                        result: result ++ to :string emptyCount
-                        emptyCount: 0
-                    ]
-                    result: result ++ to :string piece
+        emptyCount: 0
+        
+        loop 0..63 'idx [
+            ; Start new rank at every 8th square
+            if and? [idx > 0][0 = idx % 8][
+                if emptyCount > 0 [
+                    result: result ++ to :string emptyCount
+                    emptyCount: 0
                 ]
-            ]
-            
-            if emptyCount > 0 [
-                result: result ++ to :string emptyCount
+                result: result ++ "/"
             ]
 
-            if rank > 0 -> result: result ++ "/"
+            piece: \squares\[63 - idx]  ; Reverse index to start from top rank
+            
+            switch null? piece -> inc 'emptyCount [
+                if emptyCount > 0 [
+                    result: result ++ to :string emptyCount
+                    emptyCount: 0
+                ]
+                result: result ++ to :string piece
+            ]
         ]
+        
+        ; Handle any remaining empty squares
+        if emptyCount > 0 [
+            result: result ++ to :string emptyCount
+        ]
+
         result
     ]
 
     string: method [][
-        rows: map 8..1 'rank [
-            map 'a'..'h' 'file [
-                coords: to :chessCoords [@[file rank]]!
-                piece: \getPiece coords
+        rows: []
+        currentRow: []
 
-                (null? piece)? -> "-" 
-                               -> to :string piece
+        loop 0..63 'idx [
+            piece: \squares\[idx]
+            'currentRow ++ ((null? piece)? -> "-" -> to :string piece)
+
+            ; Complete row after every 8 squares
+            if 7 = idx % 8 [
+                'rows ++ @[currentRow]
+                currentRow: []
             ]
         ]
+
+        reverse 'rows  ; Flip board to show white at bottom
         tabular.align:'center .padding:0 rows
     ]
 ]
