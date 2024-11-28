@@ -153,7 +153,7 @@ The main chess board
 
 #### chessPosition
 
-A given chess position (roughly equivalent to a FEN representation)
+A given chess position
 
 ##### constructor
 
@@ -175,6 +175,9 @@ A given chess position (roughly equivalent to a FEN representation)
 - `\validateMove [newMove :chessMove]`
 - `\applyMove [newMove :chessMove]`
 
+> [!TIP]
+> You can initialize a `:chessPosition` by directly using a FEN string; or exporting a given position back to FEN, using `to :string`. 😉
+
 #### chessGame
 
 The main chess game container
@@ -195,6 +198,9 @@ The main chess game container
 ##### methods
 
 - `\makeMove: [coords :chessMove :string]`
+
+> [!WARNING]
+> Although the future goal of the `:chessGame` constructor is to fully support any type of PGN file input, right now support should be considered extremely limited!
 
 <hr/>
 
