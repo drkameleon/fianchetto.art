@@ -11,6 +11,10 @@
 ; @file: src/fianchetto.art
 ;==========================================================
 
+;------------------------------
+; Imports
+;------------------------------
+
 import ./"types/coords"
 import ./"types/piece"
 import ./"types/board"

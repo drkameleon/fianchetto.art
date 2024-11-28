@@ -11,7 +11,16 @@
 ; @file: src/types/piece.art
 ;==========================================================
 
+;------------------------------
+; Type definition
+;------------------------------
+
 define :chessPiece [
+
+    ;------------------------------
+    ; Constructor
+    ;------------------------------
+
     init: method [
         ch :char :literal :string   ; e.g. "p", 'p', 'p
     ][
@@ -23,9 +32,17 @@ define :chessPiece [
         ensure.that:"Piece is valid" -> in? \kind ['p 'n 'b 'r 'q 'k]
     ]
 
+    ;------------------------------
+    ; Methods
+    ;------------------------------
+
     white?: method [][
         \color = 'white
     ]
+
+    ;------------------------------
+    ; Magic
+    ;------------------------------
 
     string: method [][
         pieceChar: to :string \kind

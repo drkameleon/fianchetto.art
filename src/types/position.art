@@ -11,7 +11,16 @@
 ; @file: src/types/position.art
 ;==========================================================
 
+;------------------------------
+; Type definition
+;------------------------------
+
 define :chessPosition [
+
+    ;------------------------------
+    ; Constructor
+    ;------------------------------
+
     init: method [source :string :null][
         fenSrc: source ?? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         parts: split.by:" " read fenSrc
@@ -43,6 +52,10 @@ define :chessPosition [
         \halfmove: to :integer parts\4                          ; halfmove clock
         \fullmove: to :integer parts\5                          ; fullmove number
     ]
+
+    ;------------------------------
+    ; Methods
+    ;------------------------------
 
     ; Validate if a move is legal in current position
     validateMove: method [move :chessMove][
@@ -114,7 +127,11 @@ define :chessPosition [
 
         return newPos
     ]
-    ; Convert position to FEN string
+
+    ;------------------------------
+    ; Magic
+    ;------------------------------
+
     string: method [][
         colorNotation: switch \activeColor = 'white -> "w" -> "b"
 

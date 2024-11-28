@@ -11,7 +11,16 @@
 ; @file: src/types/coords.art
 ;==========================================================
 
+;------------------------------
+; Type definition
+;------------------------------
+
 define :chessCoords [
+
+    ;------------------------------
+    ; Constructor
+    ;------------------------------
+
     init: method [
         coords :string      ; e.g. "e4"
                :block       ; e.g. ['e' 4]
@@ -36,13 +45,21 @@ define :chessCoords [
         ensure.that:"Coordinate rank is valid" -> in? \rank 1..8
     ]
 
-    string: method [][
-        join @[\file to :string \rank]
-    ]
+    ;------------------------------
+    ; Methods
+    ;------------------------------
 
     index: method [][
         fileIndex: (to :integer \file) - to :integer 'a'
         rankIndex: dec \rank
         fileIndex + rankIndex * 8
+    ]
+
+    ;------------------------------
+    ; Magic
+    ;------------------------------
+
+    string: method [][
+        join @[\file to :string \rank]
     ]
 ]

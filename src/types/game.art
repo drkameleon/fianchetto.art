@@ -11,10 +11,23 @@
 ; @file: src/types/game.art
 ;==========================================================
 
+;------------------------------
+; Imports
+;------------------------------
+
 import ./"game/metadata"
 import ./"game/result"
 
+;------------------------------
+; Type definition
+;------------------------------
+
 define :chessGame [
+
+    ;------------------------------
+    ; Constructor
+    ;------------------------------
+
     init: method [
         source :string :null    ; could be PGN or null for new game
     ][
@@ -68,6 +81,10 @@ define :chessGame [
         ]
     ]
 
+    ;------------------------------
+    ; Methods
+    ;------------------------------
+
     makeMove: method [coords :chessMove :string][
         move: (is? :chessMove coords)? -> coords -> to :chessMove [coords]
         
@@ -78,6 +95,10 @@ define :chessGame [
         \moves: \moves ++ move
         return true
     ]
+
+    ;------------------------------
+    ; Magic
+    ;------------------------------
 
     string: method [][
         output: to :string \metadata

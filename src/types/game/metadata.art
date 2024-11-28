@@ -11,7 +11,16 @@
 ; @file: src/types/game/metadata.art
 ;==========================================================
 
+;------------------------------
+; Type definition
+;------------------------------
+
 define :chessGameMetadata [
+
+    ;------------------------------
+    ; Constructor
+    ;------------------------------
+
     init: method [source :dictionary :null][
         ; Initialize with default values
         \event: "Casual Game"
@@ -32,6 +41,10 @@ define :chessGameMetadata [
             ]
         ]
     ]
+
+    ;------------------------------
+    ; Magic
+    ;------------------------------
 
     string: method [][
         join @[

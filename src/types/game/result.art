@@ -11,7 +11,16 @@
 ; @file: src/types/game/result.art
 ;==========================================================
 
+;------------------------------
+; Type definition
+;------------------------------
+
 define :chessGameResult [
+
+    ;------------------------------
+    ; Constructor
+    ;------------------------------
+
     init: method [
         value :string :literal :null
     ][
@@ -33,6 +42,18 @@ define :chessGameResult [
             in? \winner ['white 'black 'draw 'none]
     ]
 
+    ;------------------------------
+    ; Methods
+    ;------------------------------
+
+    final?: method [][
+        \winner <> 'none
+    ]
+
+    ;------------------------------
+    ; Magic
+    ;------------------------------
+
     string: method [][
         case \winner [
             'white -> "1-0"
@@ -42,7 +63,4 @@ define :chessGameResult [
         ]
     ]
 
-    final?: method [][
-        \winner <> 'none
-    ]
 ]

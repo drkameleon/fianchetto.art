@@ -11,14 +11,31 @@
 ; @file: src/types/board.art
 ;==========================================================
 
+;------------------------------
+; Imports
+;------------------------------
+
 import 'tabular!
 
+;------------------------------
+; Type definition
+;------------------------------
+
 define :chessBoard [
+
+    ;------------------------------
+    ; Constructor
+    ;------------------------------
+
     init: method [][
         ; Initialize a 64-element array for the board
         ; squares[0] = a1, squares[1] = b1, ..., squares[63] = h8
         \squares: array.of:64 ø       ; create array with 64 null elements
     ]
+
+    ;------------------------------
+    ; Methods
+    ;------------------------------
 
     ; Get piece at coordinates
     getPiece: method [coords :chessCoords][
@@ -63,6 +80,10 @@ define :chessBoard [
 
         result
     ]
+
+    ;------------------------------
+    ; Magic
+    ;------------------------------
 
     string: method [][
         rows: []
