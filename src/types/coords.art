@@ -13,16 +13,25 @@
 
 define :chessCoords [
     init: method [
-        coords :string :block  
+        coords :string      ; e.g. "e4"
+               :block       ; e.g. ['e' 4]
+               :integer     ; e.g. 28 (index)
     ][
-        ensure.that:"Coordinates' size is valid" -> 2 = size coords
-        
-        \file: coords\0
-        \rank: coords\1
+        switch integer? coords [
+            ; Convert index (0-63) to file/rank
+            ensure.that:"Index is within valid range" -> in? coords 0..63
+            
+            \file: to :char (coords % 8) + to :integer 'a'
+            \rank: inc coords / 8
+        ][
+            ensure.that:"Coordinates' size is valid" -> 2 = size coords
+            
+            \file: coords\0
+            \rank: coords\1
 
-        unless integer? \rank ->
-            \rank: to :integer to :string \rank
-
+            unless integer? \rank ->
+                \rank: to :integer to :string \rank
+        ]
         ensure.that:"Coordinate file is valid" -> in? \file 'a'..'h' 
         ensure.that:"Coordinate rank is valid" -> in? \rank 1..8
     ]
