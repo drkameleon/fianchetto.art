@@ -21,7 +21,10 @@ define :chessPosition [
     ; Constructor
     ;------------------------------
 
-    init: method [source :string :null][
+    init: method [
+        source :string      ; use given FEN string/file
+               :null        ; initialize with default starting board
+    ][
         fenSrc: source ?? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         parts: split.by:" " read fenSrc
         ensure.that:"FEN string format is valid" -> 6 = size parts
