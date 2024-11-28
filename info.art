@@ -1,2 +1,5 @@
 entry: {src/fianchetto}
+depends: [
+    [tabular >= 0.0.1]
+]
 requires: [> 0.9.83]
