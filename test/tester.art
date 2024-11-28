@@ -3,12 +3,13 @@ import .withHelpers ./"../src/fianchetto"!
 game: newGame ø!
 
 ; let's show the FEN
-print game\position
+print ["Initial FEN:" game\position]
 
 ; Make moves using coordinates
 game\makeMove "e2e4"
 game\makeMove "e7e5"
 game\makeMove "g1f3"
 
-; and let's print board again
+; and let's print board
+print "Final position:"
 print game\position\board
