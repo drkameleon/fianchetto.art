@@ -31,6 +31,16 @@ define :chessPiece [
         
         ensure.that:"Piece is valid" -> in? \kind ['p 'n 'b 'r 'q 'k]
     ]
+    
+    ;------------------------------
+    ; Helpers
+    ;------------------------------
+
+    sign: function [num :integer][
+        if zero? num -> return 0
+        if num < 0 -> return neg 1
+        return 1
+    ]
 
     ;------------------------------
     ; Methods
@@ -38,6 +48,85 @@ define :chessPiece [
 
     white?: method [][
         \color = 'white
+    ]
+
+    getMovePattern: method [fromSq :chessCoords, toSq :chessCoords][
+        fileDelta: abs (to :integer toSq\file) - (to :integer fromSq\file)
+        rankDelta: abs toSq\rank - fromSq\rank
+        rankDirection: \sign toSq\rank - fromSq\rank
+
+        case \kind [
+            'p [ ; Pawn
+                validDirection: \white? ? -> 1 -> neg 1
+                startRank: \white? ? -> 2 -> 7
+
+                return #[
+                    type: 'pawn
+                    valid?: or? 
+                        ; Normal forward move (1 or 2 squares)
+                        [and? [fileDelta = 0]
+                              [or? [rankDirection = validDirection]
+                                  [and? [fromSq\rank = startRank]
+                                        [rankDirection = 2 * validDirection]]]]
+                        ; Capture move
+                        [and? [fileDelta = 1]
+                              [rankDirection = validDirection]]
+                    needsClear?: true
+                    needsCapture?: fileDelta = 1
+                    allowsEnPassant?: fileDelta = 1
+                ]
+            ]
+
+            'n [ ; Knight
+                return #[
+                    type: 'knight
+                    valid?: or? [and? [fileDelta = 2][rankDelta = 1]]
+                                [and? [fileDelta = 1][rankDelta = 2]]
+                    needsClear?: false  ; Knights can jump
+                ]
+            ]
+
+            'b [ ; Bishop
+                return #[
+                    type: 'bishop
+                    valid?: fileDelta = rankDelta
+                    needsClear?: true
+                    pathType: 'diagonal
+                ]
+            ]
+
+            'r [ ; Rook
+                return #[
+                    type: 'rook
+                    valid?: or? [fileDelta = 0][rankDelta = 0]
+                    needsClear?: true
+                    pathType: 'straight
+                ]
+            ]
+
+            'q [ ; Queen
+                return #[
+                    type: 'queen
+                    valid?: any? @[
+                        fileDelta = rankDelta
+                        fileDelta = 0
+                        rankDelta = 0
+                    ]
+                    needsClear?: true
+                    pathType: (fileDelta = rankDelta)? -> 'diagonal -> 'straight
+                ]
+            ]
+
+            'k [ ; King
+                return #[
+                    type: 'king
+                    valid?: or? [and? [fileDelta =< 1][rankDelta =< 1]]
+                                [and? [rankDelta = 0][fileDelta = 2]]  ; Castling
+                    needsClear?: fileDelta = 2  ; Only for castling
+                    allowsCastling?: fileDelta = 2
+                ]
+            ]
+        ]
     ]
 
     ;------------------------------
