@@ -1,18 +1,14 @@
 import .withHelpers ./"../src/fianchetto"!
 
 game: newGame ø!
+
+; let's show the FEN
 print game\position
-print game\position\board
 
 ; Make moves using coordinates
-print game\makeMove "e2e4"
-print game\makeMove "e7e5"
-print game\makeMove "a2a5"
+game\makeMove "e2e4"
+game\makeMove "e7e5"
+game\makeMove "g1f3"
+
+; and let's print board again
 print game\position\board
-; print game\makeMove "a2a1"
-; print game\position\board
-
-
-; game: to :chessGame [read arg\0]!
-; print game
-; print game\moves
