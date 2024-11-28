@@ -57,12 +57,73 @@ define :chessPosition [
     ]
 
     ;------------------------------
+    ; Helpers
+    ;------------------------------
+
+    sign: function [num :integer][
+        if zero? num -> return 0
+        if num < 0 -> return neg 1
+        return 1
+    ]
+
+    ;------------------------------
     ; Methods
     ;------------------------------
 
+    checkStraightPath: method [newMove :chessMove][
+        fromFile: newMove\fromSq\file
+        fromRank: newMove\fromSq\rank
+        toFile: newMove\toSq\file
+        toRank: newMove\toSq\rank
+        
+        fileStep: \sign (to :integer toFile) - (to :integer fromFile)
+        rankStep: \sign toRank - fromRank
+        
+        currentFile: fromFile
+        currentRank: fromRank
+        
+        while [or? [currentFile <> toFile]
+                   [currentRank <> toRank]][
+            currentFile: to :char (to :integer currentFile) + fileStep
+            currentRank: currentRank + rankStep
+            
+            if and? [currentFile <> toFile]
+                    [currentRank <> toRank][
+                unless null? \board\getPiece to :chessCoords [currentFile currentRank] 
+                    -> return false
+            ]
+        ]
+        
+        return true
+    ]
+
+    checkDiagonalPath: method [newMove :chessMove][
+        fromFile: newMove\fromSq\file
+        fromRank: newMove\fromSq\rank
+        toFile: newMove\toSq\file
+        toRank: newMove\toSq\rank
+        
+        fileStep: \sign (to :integer toFile) - (to :integer fromFile)
+        rankStep: \sign toRank - fromRank
+        
+        currentFile: fromFile
+        currentRank: fromRank
+        
+        while [currentFile <> toFile] [
+            currentFile: to :char (to :integer currentFile) + fileStep
+            currentRank: currentRank + rankStep
+            
+            if currentFile <> toFile [
+                unless null? \board\getPiece to :chessCoords [currentFile currentRank]
+                    -> return false
+            ]
+        ]
+        
+        return true
+    ]
+
     ; Validate if a move is legal in current position
     validateMove: method [newMove :chessMove][
-        
         ; 1. Basic piece existence and color check
         piece: \board\getPiece newMove\fromSq
         
@@ -78,11 +139,69 @@ define :chessPosition [
 
         ; 2. Check if piece at destination is not same color
         destPiece: \board\getPiece newMove\toSq
-        
         unless null? destPiece [
             if destPiece\color = piece\color [
                 print "Cannot capture own piece"
                 return false
+            ]
+        ]
+
+        ; 3. Get move pattern from piece
+        pattern: piece\getMovePattern newMove\fromSq newMove\toSq
+
+        ; 4. Basic pattern validation
+        unless pattern\valid? [
+            print "Invalid move pattern for this piece"
+            return false
+        ]
+
+        ; 5. Path validation if needed
+        if pattern\needsClear? [
+            pathClear?: (key? pattern 'pathType)?[
+                case pattern\pathType [
+                    'straight -> \checkStraightPath newMove
+                    'diagonal -> \checkDiagonalPath newMove
+                ]
+            ] -> true  ; For pieces like pawns that only need simple clearing
+
+            unless pathClear? [
+                print "Path is blocked"
+                return false
+            ]
+        ]
+
+        ; 6. Special move validation
+        case pattern\type [
+            'pawn [
+                switch pattern\needsCapture? [
+                    if null? destPiece [
+                        ; Check for en passant
+                        if and? [pattern\allowsEnPassant?]
+                                [\enPassant <> "-"][
+                            
+                            epSquare: to :chessCoords [\enPassant]!
+                            return same? newMove\toSq epSquare
+                        ]
+                        print "No piece to capture diagonally"
+                        return false
+                    ]
+                ][
+                    unless null? destPiece [
+                        print "Cannot move pawn forward into occupied square"
+                        return false
+                    ]
+                ]
+            ]
+
+            'king [
+                if pattern\allowsCastling? [
+                    ; Validate castling rights
+                    castlingFlag: (piece\white?) ? -> "K" -> "k"
+                    unless contains? \castling castlingFlag [
+                        print "Castling rights not available"
+                        return false
+                    ]
+                ]
             ]
         ]
 
