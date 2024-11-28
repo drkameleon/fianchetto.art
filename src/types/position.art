@@ -125,7 +125,7 @@ define :chessPosition [
     ; Validate if a move is legal in current position
     validateMove: method [newMove :chessMove][
         ; 1. Basic piece existence and color check
-        piece: \board\getPiece newMove\fromSq
+        piece: \board\getPiece newMove\fromSq!
         
         if null? piece [
             print "No piece at source square"
@@ -145,7 +145,7 @@ define :chessPosition [
                 return false
             ]
         ]
-
+        
         ; 3. Get move pattern from piece
         pattern: piece\getMovePattern newMove\fromSq newMove\toSq
 
