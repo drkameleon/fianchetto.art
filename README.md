@@ -19,7 +19,7 @@
 
 * [What does this package do?](#what-does-this-package-do)
 * [How do I use it?](#how-do-i-use-it)
-* [Function Reference](#function-reference)
+* [Type Reference](#type-reference)
 * [License](#license)   
 
 <!--te-->
@@ -32,9 +32,45 @@ This package includes different useful types for chess programming & analysis: p
 
 ### How do I use it?
 
-Simply `import` it and use any of the provided helper functions or types
+Simply `import` it and use any of the provided helper functions or types:
 
-### Function reference
+```red
+import .withHelpers "fianchetto"!
+
+; Let's create a new chess game!
+game: newGame ø!
+
+; What about showing the FEN string?
+print ["Initial FEN:" game\position]
+
+; Make moves using coordinates
+game\makeMove "e2e4"
+game\makeMove "e7e5"
+game\makeMove "g1f3"
+
+; and... let's print board!
+print "Final position:"
+print game\position\board
+```
+
+Will produce:
+
+```
+Initial FEN: rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w KQkq - 0 1 
+Final position:
++---+---+---+---+---+---+---+---+
+| r | n | b | q | k | b | n | r |
+| p | p | p | p | - | p | p | p |
+| - | - | - | - | - | - | - | - |
+| - | - | - | - | p | - | - | - |
+| - | - | - | - | P | - | - | - |
+| - | - | - | - | - | N | - | - |
+| P | P | P | P | - | P | P | P |
+| R | N | B | Q | K | B | - | R |
++---+---+---+---+---+---+---+---+
+```
+
+### Type reference
 
 
 <hr/>
