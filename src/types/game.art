@@ -29,7 +29,8 @@ define :chessGame [
     ;------------------------------
 
     init: method [
-        source :string :null    ; could be PGN or null for new game
+        source :string      ; load from PGN file/string
+               :null        ; create a new game
     ][
         \position: to :chessPosition [ø]!   
         \moves: []
