@@ -72,6 +72,24 @@ Final position:
 
 ### Type reference
 
+#### `chessCoords`
+
+Mainly used to hold square coordinates, or a file-rank pair.
+
+##### constructor
+
+<pre>
+<b>to :chessCoords</b> [<ins>coords</ins> <i>:string :block :integer</i>]
+</pre>
+
+##### fields
+
+- `\file`
+- `\rank`
+
+##### methods
+
+- `\index`
 
 <hr/>
 
