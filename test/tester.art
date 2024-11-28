@@ -1,18 +1,18 @@
 import ./"../src/fianchetto"!
 
-; game: to :chessGame [ø]!
-; print game\position
-; print game\position\board
+game: to :chessGame [ø]!
+print game\position
+print game\position\board
 
-; print game
-
-; ; Make moves using coordinates
-; print game\makeMove "e2e4"
-; print game\makeMove "d7d5"
-; print game\makeMove "a2a1"
-; print game\position\board
-
-
-game: to :chessGame [read arg\0]!
 print game
-print game\moves
+
+; Make moves using coordinates
+print game\makeMove "e2e4"
+print game\makeMove "d7d5"
+print game\makeMove "a2a1"
+print game\position\board
+
+
+; game: to :chessGame [read arg\0]!
+; print game
+; print game\moves
