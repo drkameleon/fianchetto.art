@@ -1,0 +1,72 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/types/board.art
+;==========================================================
+
+import 'tabular!
+
+define :chessBoard [
+    init: method [][
+        ; Initialize a 64-element array for the board
+        ; squares[0] = a1, squares[1] = b1, ..., squares[63] = h8
+        \squares: array.of:64 ø       ; create array with 64 null elements
+    ]
+
+    ; Get piece at coordinates
+    getPiece: method [coords :chessCoords][
+        \squares\[coords\index]
+    ]
+
+    ; Set piece at coordinates (null to clear)
+    setPiece: method [coords :chessCoords piece :null :chessPiece][
+        \squares\[coords\index]: piece
+    ]
+
+    ; Convert board to FEN notation 
+    notation: method [][
+        result: ""
+        loop 7..0 'rank [
+            emptyCount: 0
+            loop 0..7 'file [
+                coords: to :chessCoords [@[to :char (to :integer 'a') + file, 8 - rank]]!
+                piece: \getPiece coords
+                
+                switch null? piece -> inc 'emptyCount [
+                    if emptyCount > 0 [
+                        result: result ++ to :string emptyCount
+                        emptyCount: 0
+                    ]
+                    result: result ++ to :string piece
+                ]
+            ]
+            
+            if emptyCount > 0 [
+                result: result ++ to :string emptyCount
+            ]
+
+            if rank > 0 -> result: result ++ "/"
+        ]
+        result
+    ]
+
+    string: method [][
+        rows: map 8..1 'rank [
+            map 'a'..'h' 'file [
+                coords: to :chessCoords [@[file rank]]!
+                piece: \getPiece coords
+
+                (null? piece)? -> "-" 
+                               -> to :string piece
+            ]
+        ]
+        tabular.align:'center .padding:0 rows
+    ]
+]

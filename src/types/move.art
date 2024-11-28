@@ -1,0 +1,39 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/types/move.art
+;==========================================================
+
+define :chessMove [
+    init: method [
+        coordset :string :block 
+    ][
+        switch string? coordset [
+            cleaned: replace coordset "-" ""
+
+            ensure.that:"Move format is valid" -> 4 = size cleaned
+
+            \fromSq: to :chessCoords [slice cleaned 0 1]
+            \toSq: to :chessCoords [slice cleaned 2 3]
+        ][
+            ensure.that:"Move format is valid" -> 2 = size coordset
+
+            \fromSq: coordset\0
+            \toSq: coordset\1
+        ]
+    ]
+
+    string: method [][
+        join @[
+            to :string \fromSq
+            to :string \toSq
+        ]
+    ]
+]

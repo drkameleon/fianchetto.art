@@ -1,0 +1,39 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/types/coords.art
+;==========================================================
+
+define :chessCoords [
+    init: method [
+        coords :string :block  
+    ][
+        ensure.that:"Coordinates' size is valid" -> 2 = size coords
+        
+        \file: coords\0
+        \rank: coords\1
+
+        unless integer? \rank ->
+            \rank: to :integer to :string \rank
+
+        ensure.that:"Coordinate file is valid" -> in? \file 'a'..'h' 
+        ensure.that:"Coordinate rank is valid" -> in? \rank 1..8
+    ]
+
+    string: method [][
+        join @[\file to :string \rank]
+    ]
+
+    index: method [][
+        fileIndex: (to :integer \file) - to :integer 'a'
+        rankIndex: dec \rank
+        fileIndex + rankIndex * 8
+    ]
+]

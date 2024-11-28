@@ -1,0 +1,37 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/types/piece.art
+;==========================================================
+
+define :chessPiece [
+    init: method [
+        ch :char :literal :string
+    ][
+        pc: to :string (string? ch)? -> first ch -> ch
+
+        \color: switch upper? pc -> 'white -> 'black
+        \kind: to :literal lower pc
+        
+        ensure.that:"Piece is valid" -> in? \kind ['p 'n 'b 'r 'q 'k]
+    ]
+
+    white?: method [][
+        \color = 'white
+    ]
+
+    string: method [][
+        pieceChar: to :string \kind
+        if \white? [ 
+            pieceChar: upper pieceChar 
+        ]
+        pieceChar
+    ]
+]

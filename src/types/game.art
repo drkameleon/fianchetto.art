@@ -1,0 +1,98 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/types/game.art
+;==========================================================
+
+import ./"game/metadata"
+import ./"game/result"
+
+define :chessGame [
+    init: method [
+        source :string :null    ; could be PGN or null for new game
+    ][
+        \position: to :chessPosition [ø]!   
+        \moves: []
+        \result: to :chessGameResult [ø]!   
+        \metadata: to :chessGameMetadata [ø]!
+
+        if not? null? source [
+            if contains? source "[" [  
+                ; Split into header and moves sections
+                parts: split.by:"\n\n" source
+
+                ; Parse headers
+                headers: #[]
+                if contains? parts\0 "[" [
+                    matches: match.capture parts\0 {/\[(.*?) "(.*?)"\]/} 
+                    loop matches 'm [
+                        tag: lower m\0
+                        value: m\1
+                        headers\[tag]: value
+                    ]
+
+                    \metadata: to :chessGameMetadata [headers]!
+                    if key? headers 'result [
+                        \result: to :chessGameResult [headers\result]!
+                    ]
+                ]
+
+                ; Parse moves if we have more than one part
+                if 1 < size parts [
+                    movesText: join drop parts
+                    
+                    ; Remove comments
+                    cleaned: replace movesText to :regex {:\{[^}]*\}:} ""
+                    
+                    ; Remove move numbers and result
+                    cleaned: replace cleaned {/\d+\.+\s*/} ""      
+                    cleaned: replace cleaned {/1-0|0-1|1\/2-1\/2|\*/} "" 
+                    
+                    ; Split into individual moves and process each
+                    moves: split.words cleaned
+                    
+                    loop moves 'moveStr [
+                        if not? contains? moveStr "-" [
+                            \makeMove moveStr
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
+
+    makeMove: method [coords :chessMove :string][
+        move: (is? :chessMove coords)? -> coords -> to :chessMove [coords]
+        
+        unless \position\validateMove move ->
+            return false
+    
+        \position: \position\applyMove move
+        \moves: \moves ++ move
+        return true
+    ]
+
+    string: method [][
+        output: to :string \metadata
+        output: output ++ "\n\n"
+
+        ; Add moves
+        moveNum: 1
+        loop \moves 'move [
+            if even? index -> output: output ++ (to :string moveNum) ++ ". "
+            output: output ++ (to :string move) ++ " "
+            if even? index -> inc 'moveNum
+        ]
+
+        ; Add result
+        output: output ++ " " ++ to :string \result
+        output
+    ]
+]

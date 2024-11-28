@@ -1,0 +1,130 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/types/position.art
+;==========================================================
+
+define :chessPosition [
+    init: method [source :string :null][
+        fenSrc: source ?? "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        parts: split.by:" " read fenSrc
+        ensure.that:"Invalid FEN string format" -> 6 = size parts
+
+        \board: to :chessBoard []!
+        ranks: split.by:"/" parts\0
+        ensure.that:"Invalid number of ranks in FEN" -> 8 = size ranks
+
+        ; Parse board position from top (rank 8) to bottom (rank 1)
+        loop.with:'rankIndex ranks 'rank [
+            fileIndex: 0
+            loop split rank 'ch [
+                switch numeric? ch -> fileIndex: fileIndex + to :integer ch [
+                    coords: to :chessCoords [@[
+                        to :char (to :integer 'a') + fileIndex,  ; file (a-h)
+                        8 - rankIndex                            ; rank (8 down to 1)
+                    ]]!
+                    piece: to :chessPiece [ch]!
+                    \board\setPiece coords piece
+                    inc 'fileIndex
+                ]
+            ]
+        ]
+
+        \activeColor: switch parts\1 = "w" -> 'white -> 'black  ; active color
+        \castling: parts\2                                      ; castling
+        \enPassant: parts\3                                     ; en passant
+        \halfmove: to :integer parts\4                          ; halfmove clock
+        \fullmove: to :integer parts\5                          ; fullmove number
+    ]
+
+    ; Validate if a move is legal in current position
+    validateMove: method [move :chessMove][
+        
+        ; 1. Basic piece existence and color check
+        piece: \board\getPiece move\fromSq
+        
+        if null? piece [
+            print "No piece at source square"
+            return false
+        ]
+        
+        if piece\color <> \activeColor [
+            print "Wrong color to move"
+            return false
+        ]
+
+        ; 2. Check if piece at destination is not same color
+        destPiece: \board\getPiece move\toSq
+        
+        unless null? destPiece [
+            if destPiece\color = piece\color [
+                print "Cannot capture own piece"
+                return false
+            ]
+        ]
+
+        return true
+    ]
+
+    copy: method [][
+        newPos: to :chessPosition [ø]!
+        
+        ; Copy basic properties
+        newPos\activeColor: \activeColor
+        newPos\castling: \castling
+        newPos\enPassant: \enPassant 
+        newPos\halfmove: \halfmove
+        newPos\fullmove: \fullmove
+
+        ; Deep copy of board
+        newPos\board: to :chessBoard []!
+        loop 0..63 'i [
+            piece: \board\squares\[i]
+            if piece [
+                newPos\board\squares\[i]: to :chessPiece [to :string piece]!
+            ]
+        ]
+
+        return newPos
+    ]
+
+    ; Create a new position after applying the move
+    applyMove: method [move :chessMove][
+        ; Create new position with same properties
+        newPos: \copy
+            
+        ; Get and copy the piece we're moving
+        piece: \board\getPiece move\fromSq
+        piece: to :chessPiece [to :string piece]! ; Create new copy of piece
+            
+        ; Clear source square and set destination square
+        newPos\board\setPiece move\fromSq null
+        newPos\board\setPiece move\toSq piece 
+
+        ; Update position details
+        newPos\activeColor: switch \activeColor = 'white -> 'black -> 'white
+        newPos\fullmove: switch \activeColor = 'black -> \fullmove + 1 -> \fullmove
+
+        return newPos
+    ]
+    ; Convert position to FEN string
+    string: method [][
+        colorNotation: switch \activeColor = 'white -> "w" -> "b"
+
+        join.with:" " @[
+            \board\notation
+            colorNotation
+            \castling
+            \enPassant
+            to :string \halfmove
+            to :string \fullmove
+        ]
+    ]
+]

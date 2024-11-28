@@ -1,0 +1,48 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/types/game/metadata.art
+;==========================================================
+
+define :chessGameMetadata [
+    init: method [source :dictionary :null][
+        ; Initialize with default values
+        \event: "Casual Game"
+        \site: "?"
+        \date: slice to :string now 0 10  ; YYYY-MM-DD
+        \round: "?"
+        \white: "Player 1"
+        \black: "Player 2"
+        \timeControl: "?"
+        \eco: "?"
+
+        ; If source dictionary provided, update values
+        if dictionary? source [
+            loop source [k,v][
+                if key? this k [
+                    this\[k]: v
+                ]
+            ]
+        ]
+    ]
+
+    string: method [][
+        join @[
+            "[Event \""    \event       "\"]\n"
+            "[Site \""     \site        "\"]\n"
+            "[Date \""     \date        "\"]\n"
+            "[Round \""    \round       "\"]\n"
+            "[White \""    \white       "\"]\n"
+            "[Black \""    \black       "\"]\n"
+            "[Result \""   \timeControl "\"]\n"
+            "[ECO \""      \eco         "\"]"
+        ]
+    ]
+]

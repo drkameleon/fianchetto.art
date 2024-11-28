@@ -1,0 +1,48 @@
+;===============================================
+; Fianchetto
+;
+; Chess-aware components, custom types,
+; FEN & PGN parsing & more...
+; for Arturo
+;
+; MIT License
+; (c) 2024 Yanis Zafirópulos
+;==========================================================
+; @file: src/types/game/result.art
+;==========================================================
+
+define :chessGameResult [
+    init: method [
+        value :string :literal :null
+    ][
+        \winner: value
+
+        if null? \winner ->
+            \winner: 'none
+
+        if string? \winner [
+            \winner: case \winner [
+                "1-0"     -> 'white
+                "0-1"     -> 'black
+                "1/2-1/2" -> 'draw
+                "*"       -> 'none
+            ]
+        ]
+
+        ensure.that:"Game result type is valid" -> 
+            in? \winner ['white 'black 'draw 'none]
+    ]
+
+    string: method [][
+        case \winner [
+            'white -> "1-0"
+            'black -> "0-1"
+            'draw  -> "1/2-1/2"
+            'none  -> "*"
+        ]
+    ]
+
+    final?: method [][
+        \winner <> 'none
+    ]
+]
