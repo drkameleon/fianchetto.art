@@ -15,7 +15,7 @@
 ; Type definition
 ;------------------------------
 
-define :chessMove ::
+define :chessMove [
 
     ;------------------------------
     ; Constructor
@@ -49,3 +49,4 @@ define :chessMove ::
             to :string \toSq
         ]
     ]
+]

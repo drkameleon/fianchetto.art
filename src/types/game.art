@@ -22,7 +22,7 @@ import ./"game/result"
 ; Type definition
 ;------------------------------
 
-define :chessGame ::
+define :chessGame [
 
     ;------------------------------
     ; Constructor
@@ -116,3 +116,4 @@ define :chessGame ::
         output: output ++ " " ++ to :string \result
         output
     ]
+]

@@ -15,7 +15,7 @@
 ; Type definition
 ;------------------------------
 
-define :chessGameResult ::
+define :chessGameResult [
 
     ;------------------------------
     ; Constructor
@@ -62,3 +62,4 @@ define :chessGameResult ::
             'none  -> "*"
         ]
     ]
+]

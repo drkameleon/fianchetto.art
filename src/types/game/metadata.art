@@ -15,7 +15,7 @@
 ; Type definition
 ;------------------------------
 
-define :chessGameMetadata ::
+define :chessGameMetadata [
 
     ;------------------------------
     ; Constructor
@@ -58,3 +58,4 @@ define :chessGameMetadata ::
             "[ECO \""      \eco         "\"]"
         ]
     ]
+]
