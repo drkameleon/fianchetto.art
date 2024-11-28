@@ -86,32 +86,10 @@ define :chessPosition [
         return true
     ]
 
-    copy: method [][
-        newPos: to :chessPosition [ø]!
-        
-        ; Copy basic properties
-        newPos\activeColor: \activeColor
-        newPos\castling: \castling
-        newPos\enPassant: \enPassant 
-        newPos\halfmove: \halfmove
-        newPos\fullmove: \fullmove
-
-        ; Deep copy of board
-        newPos\board: to :chessBoard []!
-        loop 0..63 'i [
-            piece: \board\squares\[i]
-            if piece [
-                newPos\board\squares\[i]: to :chessPiece [to :string piece]!
-            ]
-        ]
-
-        return newPos
-    ]
-
     ; Create a new position after applying the move
     applyMove: method [move :chessMove][
         ; Create new position with same properties
-        newPos: \copy
+        newPos: new this
             
         ; Get and copy the piece we're moving
         piece: \board\getPiece move\fromSq
