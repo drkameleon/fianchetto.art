@@ -62,15 +62,29 @@ define :chessPiece [
 
                 return #[
                     type: 'pawn
-                    valid?: or? 
-                        ; Normal forward move (1 or 2 squares)
-                        [and? [fileDelta = 0]
-                              [or? [rankDirection = validDirection]
-                                  [and? [fromSq\rank = startRank]
-                                        [rankDirection = 2 * validDirection]]]]
+                    valid?: any? @[
+                        ; Normal forward move (single square)
+                        all? @[
+                            fileDelta = 0
+                            rankDelta = 1         ; <-- Check absolute distance
+                            rankDirection = validDirection
+                        ]
+
+                        ; Double forward move from starting position
+                        all? @[
+                            fileDelta = 0
+                            rankDelta = 2         ; <-- Check absolute distance
+                            fromSq\rank = startRank
+                            rankDirection = validDirection
+                        ]
+
                         ; Capture move
-                        [and? [fileDelta = 1]
-                              [rankDirection = validDirection]]
+                        all? @[
+                            fileDelta = 1
+                            rankDelta = 1         ; <-- Check absolute distance
+                            rankDirection = validDirection
+                        ]
+                    ]
                     needsClear?: true
                     needsCapture?: fileDelta = 1
                     allowsEnPassant?: fileDelta = 1
